@@ -1,6 +1,6 @@
 import json
 import rc_icons
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon, QMovie
 from PySide6.QtWidgets import (QLineEdit, QPushButton, QHBoxLayout, QWidget, 
     QVBoxLayout, QLabel, QScrollArea, QApplication, QSizePolicy, QTextEdit)
