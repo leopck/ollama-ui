@@ -1,7 +1,7 @@
 import json
 import rc_icons
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon, QMovie
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QLineEdit, QPushButton, QHBoxLayout
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QScrollArea, QApplication, QSizePolicy, \
     QTextEdit
@@ -81,16 +81,6 @@ class ChatWidget(QWidget):
 
         # Add the QScrollArea to the layout instead of the response_widget
         self.layout.addWidget(self.response_scroll_area)  # Add stretch factor to response_widget
-
-        # Add loading spinner
-        self.loading_spinner = QLabel(self)
-        self.loading_spinner.setAlignment(Qt.AlignCenter)
-        spinner_movie = QMovie(":/icons/spinner.gif")  # Replace with your spinner GIF path
-        self.loading_spinner.setMovie(spinner_movie)
-        spinner_movie.start()
-        self.loading_spinner.setVisible(False)  # Hide spinner by default
-        self.layout.addWidget(self.loading_spinner)
-
         self.input_widget = self.input_widget()
         self.input_widget.setEnabled(False)
 
@@ -182,8 +172,6 @@ class ChatWidget(QWidget):
 
     def submit_button_clicked(self):
         input_text = self.get_input()
-        if not input_text.strip():
-            return  # Do nothing if input is empty
         # print(input_text)
 
         # Add a new prompt label with the text from the input field
