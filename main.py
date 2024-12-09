@@ -4,7 +4,8 @@ import json
 from PySide6.QtCore import Qt, QFileSystemWatcher, QSize
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
-                             QPushButton, QFileDialog, QLabel, QSplitter, QSizePolicy)
+                             QPushButton, QFileDialog, QLabel, QSplitter, QSizePolicy,
+                             QScrollArea)
 from PySide6.QtPdf import QPdfDocument
 from PySide6.QtPdfWidgets import QPdfView
 from components.chat_widget import ChatWidget
@@ -27,16 +28,24 @@ class PDFReader(QWidget):
         self.pdf_view = QPdfView()
         self.pdf_view.setDocument(self.pdf_document)
         
-        # Enable zoom controls
+        # Configure PDF viewer for all pages
+        self.pdf_view.setPageMode(QPdfView.PageMode.MultiPage)  # Show all pages
         self.pdf_view.setZoomMode(QPdfView.ZoomMode.FitToWidth)
+        
+        # Create scroll area for PDF viewer
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidget(self.pdf_view)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         
         # Set size policy for PDF reader
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.setMinimumWidth(200)  # Minimum width for PDF reader
+        self.setMinimumWidth(200)
         
         # Add widgets to layout
         self.layout.addWidget(self.select_button)
-        self.layout.addWidget(self.pdf_view)
+        self.layout.addWidget(self.scroll_area)
         
         self.setLayout(self.layout)
         
@@ -46,13 +55,17 @@ class PDFReader(QWidget):
         if file_name:
             # Load PDF file into viewer
             self.pdf_document.load(file_name)
+            
+            # Update PDF view after loading
+            self.pdf_view.setPageMode(QPdfView.PageMode.MultiPage)
+            self.pdf_view.setZoomMode(QPdfView.ZoomMode.FitToWidth)
 
 class ResizableChat(ChatWidget):
     def __init__(self):
         super().__init__()
         # Set size policy and minimum width for chat
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.setMinimumWidth(150)  # Smaller minimum width for chat
+        self.setMinimumWidth(150)
 
 class Window(QWidget):
     def __init__(self):
@@ -87,8 +100,8 @@ class Window(QWidget):
         self.splitter.setSizes([int(total_width * 0.7), int(total_width * 0.3)])
         
         # Enable size constraints on splitter
-        self.splitter.setCollapsible(0, False)  # Prevent PDF reader from collapsing
-        self.splitter.setCollapsible(1, False)  # Prevent chat from collapsing
+        self.splitter.setCollapsible(0, False)
+        self.splitter.setCollapsible(1, False)
         
         # Add splitter to main layout
         main_layout.addWidget(self.splitter)
@@ -103,7 +116,7 @@ class Window(QWidget):
             # Load the most recent chat
             self.loadMostRecentChat()
             
-        # Add stylesheet for splitter handle
+        # Add stylesheet for splitter handle and scrollbars
         self.setStyleSheet("""
             QSplitter::handle {
                 background: #cccccc;
@@ -111,6 +124,12 @@ class Window(QWidget):
             }
             QSplitter::handle:hover {
                 background: #999999;
+            }
+            QScrollBar:vertical {
+                width: 12px;
+            }
+            QScrollBar:horizontal {
+                height: 12px;
             }
         """)
 
