@@ -1,11 +1,14 @@
 import os
 import sys
-import json
 
 from PySide6.QtCore import Qt, QFileSystemWatcher
 from PySide6.QtGui import QIcon, QKeyEvent
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout
+from PySide6.QtWidgets import QApplication, QWidget, QHBoxLayout
 from components.chat_widget import ChatWidget
+from components.sidebar import Sidebar
+
+# Set DEV_MODE to True for live update, False for no live update
+DEV_MODE = True
 
 
 class Window(QWidget):
@@ -14,31 +17,20 @@ class Window(QWidget):
         self.setWindowTitle("Ollama UI")
         self.setWindowIcon(QIcon(':/icons/ai_icon.png'))
         self.setObjectName("window")
-        
-        # Initialize chat history
-        self.chat_history = []
-        self.history_file = "chat_history.json"
         self.messages_visible = True  # Track visibility state
-        self.loadChatHistory()
         
-        # Create main layout
-        layout = QVBoxLayout()
+        layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Initialize chat widget
+        sidebar = Sidebar()
+        sidebar.setAttribute(Qt.WA_StyledBackground, True)
         self.chat = ChatWidget()
         self.chat.setAttribute(Qt.WA_StyledBackground, True)
+
+        layout.addWidget(sidebar, stretch=1)
         layout.addWidget(self.chat)
-        
         self.setLayout(layout)
         self.resize(800, 600)
-        
-        # Create initial chat session if none exists
-        if not self.chat_history:
-            self.createNewChat()
-        else:
-            # Load the most recent chat
-            self.loadMostRecentChat()
+        sidebar.page_content.connect(self.chat.changePage)
 
         # Enable key event handling
         self.setFocusPolicy(Qt.StrongFocus)
@@ -57,32 +49,6 @@ class Window(QWidget):
             self.chat.setMessagesVisible(self.messages_visible)
         # Print current state (you can remove this in production)
         print(f"Messages {'visible' if self.messages_visible else 'hidden'}")
-
-    def loadChatHistory(self):
-        try:
-            with open(self.history_file, 'r') as file:
-                self.chat_history = json.load(file)
-        except FileNotFoundError:
-            self.saveChatHistory()
-
-    def saveChatHistory(self):
-        with open(self.history_file, 'w') as file:
-            json.dump(self.chat_history, file)
-
-    def createNewChat(self):
-        new_chat = {
-            "chat_id": len(self.chat_history) + 1,
-            "message": "New Chat Session",
-            "content": []
-        }
-        self.chat_history.append(new_chat)
-        self.saveChatHistory()
-        self.chat.changePage(json.dumps(new_chat))
-
-    def loadMostRecentChat(self):
-        if self.chat_history:
-            most_recent_chat = self.chat_history[-1]
-            self.chat.changePage(json.dumps(most_recent_chat))
 
 
 if __name__ == "__main__":
