@@ -5,7 +5,8 @@ from PySide6.QtCore import Qt, QFileSystemWatcher
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
                              QPushButton, QFileDialog, QLabel)
-from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtPdf import QPdfDocument
+from PySide6.QtPdfWidgets import QPdfView
 from components.chat_widget import ChatWidget
 
 # Set DEV_MODE to True for live update, False for no live update
@@ -20,8 +21,10 @@ class PDFReader(QWidget):
         self.select_button = QPushButton("Select PDF")
         self.select_button.clicked.connect(self.select_pdf)
         
-        # Create PDF viewer using QWebEngineView
-        self.pdf_view = QWebEngineView()
+        # Create PDF document and viewer
+        self.pdf_document = QPdfDocument()
+        self.pdf_view = QPdfView()
+        self.pdf_view.setDocument(self.pdf_document)
         
         # Add widgets to layout
         self.layout.addWidget(self.select_button)
@@ -34,7 +37,7 @@ class PDFReader(QWidget):
             self, "Select PDF", "", "PDF Files (*.pdf)")
         if file_name:
             # Load PDF file into viewer
-            self.pdf_view.setUrl(f"file:///{file_name}")
+            self.pdf_document.load(file_name)
 
 class Window(QWidget):
     def __init__(self):
