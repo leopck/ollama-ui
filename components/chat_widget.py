@@ -186,11 +186,6 @@ class ChatWidget(QWidget):
             return  # Do nothing if input is empty
         # print(input_text)
 
-        # Show spinner and disable input during processing
-        self.loading_spinner.setVisible(True)
-        input_widget = self.layout.itemAt(1).widget()
-        input_widget.setEnabled(False)
-
         # Add a new prompt label with the text from the input field
         prompt_layout = QHBoxLayout()
         prompt_layout.setContentsMargins(0, 0, 0, 0)
@@ -249,8 +244,6 @@ class ChatWidget(QWidget):
         contents_height = response_label.document().size().height()
         response_label.setFixedHeight(contents_height+48)
         # after response complete update the chat history
-        self.loading_spinner.setVisible(False)
-        input_widget.setEnabled(True)
         update_chat_history(input_text, response_label.toPlainText())
         self.clear_input()
 
