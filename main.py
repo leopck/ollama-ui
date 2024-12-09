@@ -1,20 +1,45 @@
 import os
 import sys
 import json
-
 from PySide6.QtCore import Qt, QFileSystemWatcher
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout
+from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
+                             QPushButton, QFileDialog, QLabel)
+from PySide6.QtWebEngineWidgets import QWebEngineView
 from components.chat_widget import ChatWidget
 
 # Set DEV_MODE to True for live update, False for no live update
 DEV_MODE = True
 
+class PDFReader(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QVBoxLayout()
+        
+        # Create button to select PDF
+        self.select_button = QPushButton("Select PDF")
+        self.select_button.clicked.connect(self.select_pdf)
+        
+        # Create PDF viewer using QWebEngineView
+        self.pdf_view = QWebEngineView()
+        
+        # Add widgets to layout
+        self.layout.addWidget(self.select_button)
+        self.layout.addWidget(self.pdf_view)
+        
+        self.setLayout(self.layout)
+        
+    def select_pdf(self):
+        file_name, _ = QFileDialog.getOpenFileName(
+            self, "Select PDF", "", "PDF Files (*.pdf)")
+        if file_name:
+            # Load PDF file into viewer
+            self.pdf_view.setUrl(f"file:///{file_name}")
 
 class Window(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Ollama UI")
+        self.setWindowTitle("Ollama UI with PDF Reader")
         self.setWindowIcon(QIcon(':/icons/ai_icon.png'))
         self.setObjectName("window")
         
@@ -24,16 +49,20 @@ class Window(QWidget):
         self.loadChatHistory()
         
         # Create main layout
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
+        main_layout = QHBoxLayout()  # Changed to QHBoxLayout for side-by-side widgets
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Initialize PDF reader widget
+        self.pdf_reader = PDFReader()
+        main_layout.addWidget(self.pdf_reader, 1)  # Add stretch factor of 1
         
         # Initialize chat widget
         self.chat = ChatWidget()
         self.chat.setAttribute(Qt.WA_StyledBackground, True)
-        layout.addWidget(self.chat)
+        main_layout.addWidget(self.chat, 2)  # Add stretch factor of 2
         
-        self.setLayout(layout)
-        self.resize(800, 600)
+        self.setLayout(main_layout)
+        self.resize(1200, 600)  # Increased default width to accommodate both widgets
         
         # Create initial chat session if none exists
         if not self.chat_history:
