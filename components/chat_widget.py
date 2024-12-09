@@ -184,44 +184,75 @@ class ChatWidget(QWidget):
         input_text = self.get_input()
         if not input_text.strip():
             return  # Do nothing if input is empty
+        # print(input_text)
 
         # Show spinner and disable input during processing
         self.loading_spinner.setVisible(True)
         input_widget = self.layout.itemAt(1).widget()
         input_widget.setEnabled(False)
 
-        # Add prompt widget
-        self.prompt_widget(input_text)
+        # Add a new prompt label with the text from the input field
+        prompt_layout = QHBoxLayout()
+        prompt_layout.setContentsMargins(0, 0, 0, 0)
+        prompt_icon = QLabel()
+        icon = QIcon(':/icons/user_icon.svg')  # Create QIcon from the SVG file
+        pixmap = icon.pixmap(20, 20)  # Create QPixmap from QIcon
+        prompt_icon.setPixmap(pixmap)  # Set QPixmap as the icon for QLabel
+        prompt_icon.setFixedSize(20, 20)  # Set a fixed size for the icon
 
-        # Add response placeholder
+        prompt_label = GrowingTextEdit(input_text)
+        prompt_label.setObjectName('prompt-label')
+        prompt_label.setReadOnly(True)
+
+        prompt_layout.addWidget(prompt_icon)
+        prompt_layout.addWidget(prompt_label)  # Set a stretch factor for the prompt
+        prompt_layout.setAlignment(Qt.AlignTop)  # Align the layout to the top
+        prompt_layout.setAlignment(prompt_icon, Qt.AlignTop)
+        prompt_widget = QWidget()
+        prompt_widget.setObjectName('prompt-widget')
+        prompt_widget.setLayout(prompt_layout)
+        self.response_layout.addWidget(prompt_widget)
+        self.response_layout.setAlignment(prompt_widget, Qt.AlignTop)
+
+        # Add a new response label with the text "Answer goes here"
+        response_layout = QHBoxLayout()
+        response_layout.setContentsMargins(0, 0, 0, 0)
+        response_icon = QLabel()
+        icon = QIcon(':/icons/ai_icon.png')  # Create QIcon from the SVG file
+        pixmap = icon.pixmap(20, 20)  # Create QPixmap from QIcon
+        response_icon.setPixmap(pixmap)  # Set QPixmap as the icon for QLabel
+        response_icon.setFixedSize(20, 20)  # Set a fixed size for the icon
         response_label = GrowingTextEdit()
         response_label.setObjectName('response-label')
         response_label.setReadOnly(True)
-        self.response_widget_method(response_label)
+        response_layout.addWidget(response_icon)
+        response_layout.addWidget(response_label)  # Set a stretch factor for the response
+        response_layout.setAlignment(Qt.AlignTop)  # Align the layout to the top
+        response_layout.setAlignment(response_icon, Qt.AlignTop)
+        response_widget = QWidget()
+        response_widget.setObjectName('response-widget')
+        response_widget.setLayout(response_layout)
+        self.response_layout.addWidget(response_widget)
+        self.response_layout.setAlignment(response_widget, Qt.AlignTop)
 
-        try:
-            # Fetch and display the response in chunks
-            for chunk in get_response(input_text):
-                response_label.append(chunk.strip())  # Append and trim each chunk
-                contents_height = response_label.document().size().height()
-                response_label.setFixedHeight(contents_height + 48)
-                QApplication.processEvents()  # Ensure UI stays responsive
-
-            # Update chat history with the full response
-            update_chat_history(input_text, response_label.toPlainText())
-
-        except Exception as e:
-            # Handle potential errors (optional logging)
-            print(f"Error during response fetching: {e}")
-
-        finally:
-            # Ensure spinner is hidden and input is re-enabled
-            self.loading_spinner.setVisible(False)
-            input_widget.setEnabled(True)
-
-        # Clear the input field
+        for chunk in get_response(input_text):
+            lines = chunk.split('\n')  # Split the chunk into lines
+            lines[0] = lines[0].lstrip('\n')  # Remove leading newline character from the first line
+            chunk = '\n'.join(lines)  # Join the lines back together
+            response_label.setText(response_label.toPlainText() + chunk)  # Append the chunk to the response text
+            contents_height = response_label.document().size().height()
+            response_label.setFixedHeight(contents_height+48)  # Adjust the height based on the contents and add padding
+            QApplication.processEvents()
+            # Force UI update after each chunk append
+            # after each response append \n to the response label
+        response_label.setText(response_label.toPlainText() )
+        contents_height = response_label.document().size().height()
+        response_label.setFixedHeight(contents_height+48)
+        # after response complete update the chat history
+        self.loading_spinner.setVisible(False)
+        input_widget.setEnabled(True)
+        update_chat_history(input_text, response_label.toPlainText())
         self.clear_input()
-
 
     def clear_input(self):
         input_widget = self.layout.itemAt(1).widget()
