@@ -7,6 +7,12 @@ from PySide6.QtWidgets import (QLineEdit, QPushButton, QHBoxLayout, QWidget,
 
 from backend.main import get_response
 
+def clear_layout(layout):
+    while layout.count():
+        child = layout.takeAt(0)
+        if child.widget():
+            child.widget().deleteLater()
+
 class GrowingTextEdit(QTextEdit):
     def __init__(self, *args, **kwargs):
         super(GrowingTextEdit, self).__init__(*args, **kwargs)
