@@ -70,8 +70,8 @@ class ResizableChat(ChatWidget):
 class Window(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Ollama UI with PDF Reader")
-        self.setWindowIcon(QIcon(':/icons/ai_icon.png'))
+        self.setWindowTitle("Adobe PDF Reader (OneCern licensed)")
+        self.setWindowIcon(QIcon(':/icons/adobe.png'))
         self.setObjectName("window")
         
         # Initialize chat history
