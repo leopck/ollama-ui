@@ -3,12 +3,9 @@ import sys
 import json
 
 from PySide6.QtCore import Qt, QFileSystemWatcher
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QHBoxLayout
+from PySide6.QtGui import QIcon, QKeyEvent
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout
 from components.chat_widget import ChatWidget
-
-# Set DEV_MODE to True for live update, False for no live update
-DEV_MODE = True
 
 
 class Window(QWidget):
@@ -21,25 +18,12 @@ class Window(QWidget):
         # Initialize chat history
         self.chat_history = []
         self.history_file = "chat_history.json"
+        self.messages_visible = True  # Track visibility state
         self.loadChatHistory()
         
         # Create main layout
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Create header with New Chat button
-        header = QHBoxLayout()
-        new_chat_button = QPushButton("New Chat")
-        new_chat_button.setObjectName("new-chat-button")
-        new_chat_button.setCursor(Qt.PointingHandCursor)
-        new_chat_button.clicked.connect(self.createNewChat)
-        header.addWidget(new_chat_button)
-        header.addStretch()  # This pushes the button to the left
-        
-        # Create a widget for the header and add it to main layout
-        header_widget = QWidget()
-        header_widget.setLayout(header)
-        layout.addWidget(header_widget)
         
         # Initialize chat widget
         self.chat = ChatWidget()
@@ -55,6 +39,24 @@ class Window(QWidget):
         else:
             # Load the most recent chat
             self.loadMostRecentChat()
+
+        # Enable key event handling
+        self.setFocusPolicy(Qt.StrongFocus)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        # Check for Ctrl+H
+        if event.key() == Qt.Key_H and event.modifiers() == Qt.ControlModifier:
+            self.toggleMessagesVisibility()
+        else:
+            super().keyPressEvent(event)
+
+    def toggleMessagesVisibility(self):
+        self.messages_visible = not self.messages_visible
+        # Assuming ChatWidget has a method to show/hide messages
+        if hasattr(self.chat, 'setMessagesVisible'):
+            self.chat.setMessagesVisible(self.messages_visible)
+        # Print current state (you can remove this in production)
+        print(f"Messages {'visible' if self.messages_visible else 'hidden'}")
 
     def loadChatHistory(self):
         try:
