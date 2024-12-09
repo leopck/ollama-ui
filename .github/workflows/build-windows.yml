@@ -23,7 +23,7 @@ jobs:
         run: |
           pip install --upgrade pip
           # Install PyInstaller, PySide6, and ollama
-          pip install pyinstaller pyside6 ollama pillow PySide6-QtWebEngineWidgets
+          pip install pyinstaller pyside6 ollama pillow
 
       - name: Build Executable
         # Adjust the PyInstaller command as needed
