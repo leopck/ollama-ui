@@ -42,13 +42,21 @@ class ChatWidget(QWidget):
         self.input_widget = self.input_widget()
         self.input_widget.setEnabled(False)
 
+    def changePage(self, chat_widget):
+        chat_widget_data = json.loads(chat_widget)
+        clear_layout(self.response_layout)
+        for item in chat_widget_data['content']:
+            self.prompt_widget(item['prompt'])
+            self.response_widget_method(item["response"])
+        self.input_widget.setEnabled(True)
+
     def input_widget(self):
         input_widget = QWidget()
         input_layout = QHBoxLayout()
-        input_field = QLineEdit()
-        input_field.setObjectName('input-field')
-        input_field.setPlaceholderText("Ask a question...")
-        input_field.returnPressed.connect(self.submit_button_clicked)  # Add enter key support
+        self.input_field = QLineEdit()
+        self.input_field.setObjectName('input-field')
+        self.input_field.setPlaceholderText("Ask a question...")
+        self.input_field.returnPressed.connect(self.submit_button_clicked)  # Add enter key support
 
         self.submit_button = QPushButton("")
         icon = QIcon(":icons/send.svg")
@@ -64,7 +72,7 @@ class ChatWidget(QWidget):
         self.spinner_label.hide()  # Hide spinner initially
 
         self.submit_button.clicked.connect(self.submit_button_clicked)
-        input_layout.addWidget(input_field)
+        input_layout.addWidget(self.input_field)
         input_layout.addWidget(self.submit_button)
         input_layout.addWidget(self.spinner_label)
         input_widget.setLayout(input_layout)
@@ -78,9 +86,9 @@ class ChatWidget(QWidget):
         
         # Show loading state
         input_widget = self.layout.itemAt(1).widget()
-        input_field = input_widget.layout().itemAt(0).widget()
-        input_field.setEnabled(False)
-        input_field.setStyleSheet("color: gray;")
+        self.input_field = input_widget.layout().itemAt(0).widget()
+        self.input_field.setEnabled(False)
+        self.input_field.setStyleSheet("color: gray;")
         self.submit_button.hide()
         self.spinner_label.show()
         self.spinner_movie.start()
@@ -144,8 +152,8 @@ class ChatWidget(QWidget):
             update_chat_history(input_text, response_label.toPlainText())
         finally:
             # Restore normal state
-            input_field.setEnabled(True)
-            input_field.setStyleSheet("")
+            self.input_field.setEnabled(True)
+            self.input_field.setStyleSheet("")
             self.spinner_label.hide()
             self.spinner_movie.stop()
             self.submit_button.show()
@@ -153,3 +161,6 @@ class ChatWidget(QWidget):
 
     def clear_input(self):
         self.input_field.clear()
+
+    def get_input(self):
+        return self.input_field.text().strip()
