@@ -27,7 +27,7 @@ jobs:
 
       - name: Build Executable
         # Adjust the PyInstaller command as needed
-        run: pyinstaller --name="Ollama UI" --windowed --add-data "index.css;." --icon=icons/ai_icon.png --icon=icons/adobe.png main.py --onefile
+        run: pyinstaller --name="Ollama UI" --windowed --add-data "index.css;." --icon=icons/ai_icon.png main.py --onefile
 
       - name: Archive and Upload Artifact
         uses: actions/upload-artifact@v4
