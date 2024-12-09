@@ -1,10 +1,10 @@
 import os
 import sys
 import json
-from PySide6.QtCore import Qt, QFileSystemWatcher
+from PySide6.QtCore import Qt, QFileSystemWatcher, QSize
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
-                             QPushButton, QFileDialog, QLabel, QSplitter)
+                             QPushButton, QFileDialog, QLabel, QSplitter, QSizePolicy)
 from PySide6.QtPdf import QPdfDocument
 from PySide6.QtPdfWidgets import QPdfView
 from components.chat_widget import ChatWidget
@@ -16,7 +16,7 @@ class PDFReader(QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout()
-        self.layout.setContentsMargins(0, 0, 0, 0)  # Remove margins for cleaner look
+        self.layout.setContentsMargins(0, 0, 0, 0)
         
         # Create button to select PDF
         self.select_button = QPushButton("Select PDF")
@@ -30,6 +30,10 @@ class PDFReader(QWidget):
         # Enable zoom controls
         self.pdf_view.setZoomMode(QPdfView.ZoomMode.FitToWidth)
         
+        # Set size policy for PDF reader
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setMinimumWidth(200)  # Minimum width for PDF reader
+        
         # Add widgets to layout
         self.layout.addWidget(self.select_button)
         self.layout.addWidget(self.pdf_view)
@@ -42,6 +46,13 @@ class PDFReader(QWidget):
         if file_name:
             # Load PDF file into viewer
             self.pdf_document.load(file_name)
+
+class ResizableChat(ChatWidget):
+    def __init__(self):
+        super().__init__()
+        # Set size policy and minimum width for chat
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setMinimumWidth(150)  # Smaller minimum width for chat
 
 class Window(QWidget):
     def __init__(self):
@@ -66,13 +77,18 @@ class Window(QWidget):
         self.pdf_reader = PDFReader()
         self.splitter.addWidget(self.pdf_reader)
         
-        # Initialize chat widget
-        self.chat = ChatWidget()
+        # Initialize chat widget with new ResizableChat class
+        self.chat = ResizableChat()
         self.chat.setAttribute(Qt.WA_StyledBackground, True)
         self.splitter.addWidget(self.chat)
         
-        # Set initial sizes (60% PDF reader, 40% chat)
-        self.splitter.setSizes([600, 400])
+        # Set initial sizes (70% PDF reader, 30% chat)
+        total_width = 1200
+        self.splitter.setSizes([int(total_width * 0.7), int(total_width * 0.3)])
+        
+        # Enable size constraints on splitter
+        self.splitter.setCollapsible(0, False)  # Prevent PDF reader from collapsing
+        self.splitter.setCollapsible(1, False)  # Prevent chat from collapsing
         
         # Add splitter to main layout
         main_layout.addWidget(self.splitter)
