@@ -71,7 +71,7 @@ class Window(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Adobe PDF Reader (OneCern licensed)")
-        self.setWindowIcon(QIcon(':/icons/adobe.png'))
+        self.setWindowIcon(QIcon(':/icons/ai_icon.png'))
         self.setObjectName("window")
         
         # Initialize chat history
