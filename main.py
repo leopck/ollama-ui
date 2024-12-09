@@ -3,9 +3,8 @@ import sys
 
 from PySide6.QtCore import Qt, QFileSystemWatcher
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication, QWidget, QHBoxLayout
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout
 from components.chat_widget import ChatWidget
-from components.sidebar import Sidebar
 
 # Set DEV_MODE to True for live update, False for no live update
 DEV_MODE = True
@@ -17,18 +16,22 @@ class Window(QWidget):
         self.setWindowTitle("Ollama UI")
         self.setWindowIcon(QIcon(':/icons/ai_icon.png'))
         self.setObjectName("window")
-        layout = QHBoxLayout()
+        
+        # Changed to VBoxLayout since we only have one widget now
+        layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        sidebar = Sidebar()
-        sidebar.setAttribute(Qt.WA_StyledBackground, True)
-        chat = ChatWidget()
-        chat.setAttribute(Qt.WA_StyledBackground, True)
-
-        layout.addWidget(sidebar, stretch=1)
-        layout.addWidget(chat)
+        
+        # Initialize chat widget
+        self.chat = ChatWidget()
+        self.chat.setAttribute(Qt.WA_StyledBackground, True)
+        
+        # Add chat widget to layout
+        layout.addWidget(self.chat)
         self.setLayout(layout)
         self.resize(800, 600)
-        sidebar.page_content.connect(chat.changePage)
+        
+        # If the ChatWidget needs an initial page setup, you can do it here
+        # self.chat.changePage("default_page")  # Uncomment and modify as needed
 
 
 if __name__ == "__main__":
@@ -43,7 +46,6 @@ if __name__ == "__main__":
     if DEV_MODE:
         watcher = QFileSystemWatcher()
         watcher.addPath('index.css')
-
 
         def update_stylesheet(path):
             new_stylesheet = open(path).read()
