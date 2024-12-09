@@ -19,8 +19,8 @@ class Window(QWidget):
         self.setObjectName("window")
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        sidebar = Sidebar()
-        sidebar.setAttribute(Qt.WA_StyledBackground, True)
+        # sidebar = Sidebar()
+        # sidebar.setAttribute(Qt.WA_StyledBackground, True)
         chat = ChatWidget()
         chat.setAttribute(Qt.WA_StyledBackground, True)
 
@@ -28,7 +28,7 @@ class Window(QWidget):
         layout.addWidget(chat)
         self.setLayout(layout)
         self.resize(800, 600)
-        sidebar.page_content.connect(chat.changePage)
+        # sidebar.page_content.connect(chat.changePage)
 
 
 if __name__ == "__main__":
