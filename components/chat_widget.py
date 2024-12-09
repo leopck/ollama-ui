@@ -31,7 +31,7 @@ class ChatWidget(QWidget):
         self.response_widget = QWidget()
         self.response_widget.setObjectName('main-chat-widget')
         self.response_layout = QVBoxLayout()
-        self.response_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.response_layout.setAlignment(Qt.Alignment.AlignTop)
         self.response_widget.setLayout(self.response_layout)
 
         self.response_scroll_area = QScrollArea()
@@ -39,102 +39,96 @@ class ChatWidget(QWidget):
         self.response_scroll_area.setWidget(self.response_widget)
 
         self.layout.addWidget(self.response_scroll_area)
-        self.input_widget = self.create_input_widget()
+        self.input_widget = self.input_widget()
         self.input_widget.setEnabled(False)
-        
-        # Initialize loading spinner
-        self.loading_movie = QMovie("icons/spinner.gif")
-        self.loading_movie.setScaledSize(QSize(20, 20))  # Match the size of your submit button icon
 
-    def create_input_widget(self):
+    def input_widget(self):
         input_widget = QWidget()
         input_layout = QHBoxLayout()
-        
-        # Create input field with enter key support
-        self.input_field = QLineEdit()
-        self.input_field.setObjectName('input-field')
-        self.input_field.setPlaceholderText("Ask a question...")
-        self.input_field.returnPressed.connect(self.handle_submit)
-        
-        # Create submit button with icon
+        input_field = QLineEdit()
+        input_field.setObjectName('input-field')
+        input_field.setPlaceholderText("Ask a question...")
+        input_field.returnPressed.connect(self.submit_button_clicked)  # Add enter key support
+
         self.submit_button = QPushButton("")
-        self.submit_icon = QIcon(":icons/send.svg")
-        self.submit_button.setIcon(self.submit_icon)
+        icon = QIcon(":icons/send.svg")
+        self.submit_button.setIcon(icon)
         self.submit_button.setObjectName('submit-button')
         self.submit_button.setCursor(Qt.PointingHandCursor)
-        self.submit_button.clicked.connect(self.handle_submit)
-        
-        # Create loading label (hidden by default)
-        self.loading_label = QLabel()
-        self.loading_label.setFixedSize(20, 20)
-        self.loading_label.setMovie(self.loading_movie)
-        self.loading_label.hide()
-        
-        input_layout.addWidget(self.input_field)
+
+        # Create loading spinner
+        self.spinner_label = QLabel()
+        self.spinner_movie = QMovie("icons/spinner.gif")
+        self.spinner_movie.setScaledSize(QSize(20, 20))
+        self.spinner_label.setMovie(self.spinner_movie)
+        self.spinner_label.hide()  # Hide spinner initially
+
+        self.submit_button.clicked.connect(self.submit_button_clicked)
+        input_layout.addWidget(input_field)
         input_layout.addWidget(self.submit_button)
-        input_layout.addWidget(self.loading_label)
-        
+        input_layout.addWidget(self.spinner_label)
         input_widget.setLayout(input_layout)
         input_widget.setContentsMargins(0, 0, 0, 0)
         input_widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
         input_widget.setObjectName('input-widget')
-        
-        self.layout.addWidget(input_widget)
         return input_widget
 
-    def set_loading_state(self, is_loading):
-        if is_loading:
-            # Disable input and show loading state
-            self.input_field.setEnabled(False)
-            self.input_field.setStyleSheet("color: gray;")
-            self.submit_button.hide()
-            self.loading_label.show()
-            self.loading_movie.start()
-        else:
-            # Re-enable input and restore normal state
-            self.input_field.setEnabled(True)
-            self.input_field.setStyleSheet("")
-            self.loading_label.hide()
-            self.loading_movie.stop()
-            self.submit_button.show()
-
-    def handle_submit(self):
-        input_text = self.input_field.text().strip()
-        if not input_text:
-            return
-
-        self.set_loading_state(True)
+    def submit_button_clicked(self):
+        input_text = self.get_input()
         
-        # Add prompt widget
-        self.prompt_widget(input_text)
-        
-        # Create and add response widget
+        # Show loading state
+        input_widget = self.layout.itemAt(1).widget()
+        input_field = input_widget.layout().itemAt(0).widget()
+        input_field.setEnabled(False)
+        input_field.setStyleSheet("color: gray;")
+        self.submit_button.hide()
+        self.spinner_label.show()
+        self.spinner_movie.start()
+
+        # Add prompt widget and create response widget as before
+        prompt_layout = QHBoxLayout()
+        prompt_layout.setContentsMargins(0, 0, 0, 0)
+        prompt_icon = QLabel()
+        icon = QIcon(':/icons/user_icon.svg')
+        pixmap = icon.pixmap(20, 20)
+        prompt_icon.setPixmap(pixmap)
+        prompt_icon.setFixedSize(20, 20)
+
+        prompt_label = GrowingTextEdit(input_text)
+        prompt_label.setObjectName('prompt-label')
+        prompt_label.setReadOnly(True)
+
+        prompt_layout.addWidget(prompt_icon)
+        prompt_layout.addWidget(prompt_label)
+        prompt_layout.setAlignment(Qt.AlignTop)
+        prompt_layout.setAlignment(prompt_icon, Qt.AlignTop)
+        prompt_widget = QWidget()
+        prompt_widget.setObjectName('prompt-widget')
+        prompt_widget.setLayout(prompt_layout)
+        self.response_layout.addWidget(prompt_widget)
+        self.response_layout.setAlignment(prompt_widget, Qt.AlignTop)
+
+        # Response widget creation
         response_layout = QHBoxLayout()
         response_layout.setContentsMargins(0, 0, 0, 0)
-        
         response_icon = QLabel()
         icon = QIcon(':/icons/ai_icon.png')
         pixmap = icon.pixmap(20, 20)
         response_icon.setPixmap(pixmap)
         response_icon.setFixedSize(20, 20)
-        
         response_label = GrowingTextEdit()
         response_label.setObjectName('response-label')
         response_label.setReadOnly(True)
-        
         response_layout.addWidget(response_icon)
         response_layout.addWidget(response_label)
-        response_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        response_layout.setAlignment(response_icon, Qt.AlignmentFlag.AlignTop)
-        
+        response_layout.setAlignment(Qt.AlignTop)
+        response_layout.setAlignment(response_icon, Qt.AlignTop)
         response_widget = QWidget()
         response_widget.setObjectName('response-widget')
         response_widget.setLayout(response_layout)
-        
         self.response_layout.addWidget(response_widget)
-        self.response_layout.setAlignment(response_widget, Qt.AlignmentFlag.AlignTop)
+        self.response_layout.setAlignment(response_widget, Qt.AlignTop)
 
-        # Process response chunks
         try:
             for chunk in get_response(input_text):
                 lines = chunk.split('\n')
@@ -142,15 +136,19 @@ class ChatWidget(QWidget):
                 chunk = '\n'.join(lines)
                 response_label.setText(response_label.toPlainText() + chunk)
                 contents_height = response_label.document().size().height()
-                response_label.setFixedHeight(contents_height + 48)
+                response_label.setFixedHeight(contents_height+48)
                 QApplication.processEvents()
-            
-            # Update chat history
+            response_label.setText(response_label.toPlainText())
+            contents_height = response_label.document().size().height()
+            response_label.setFixedHeight(contents_height+48)
             update_chat_history(input_text, response_label.toPlainText())
-            
         finally:
-            # Restore normal state regardless of success or failure
-            self.set_loading_state(False)
+            # Restore normal state
+            input_field.setEnabled(True)
+            input_field.setStyleSheet("")
+            self.spinner_label.hide()
+            self.spinner_movie.stop()
+            self.submit_button.show()
             self.clear_input()
 
     def clear_input(self):
