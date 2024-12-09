@@ -7,10 +7,6 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QScrollArea, QApplic
     QTextEdit
 
 from backend.main import get_response
-#
-# ai_icon = "icons/ai_icon.png"
-# user_icon = "icons/user_icon.svg"
-
 
 class GrowingTextEdit(QTextEdit):
     def __init__(self, *args, **kwargs):
@@ -25,18 +21,15 @@ class GrowingTextEdit(QTextEdit):
         contents_height = self.document().size().height()
         self.setFixedHeight(contents_height)  # Adjust the height based on the contents and add padding
 
-
 def clear_layout(layout):
     while layout.count():
         child = layout.takeAt(0)
         if child.widget():
             child.widget().deleteLater()
 
-
 def save_chat_history(chat_history):
     with open('chat_history.json', 'w') as file:
         json.dump(chat_history, file, indent=4)
-
 
 def get_chat_history():
     try:
@@ -45,7 +38,6 @@ def get_chat_history():
     except FileNotFoundError:
         chat_history = []
     return chat_history
-
 
 def update_chat_history(prompt, response):
     chat_history = get_chat_history()
@@ -57,7 +49,6 @@ def update_chat_history(prompt, response):
     chat_history[-1]['content'].append({"prompt": prompt, "response": response})
     save_chat_history(chat_history)
 
-
 class ChatWidget(QWidget):
     def __init__(self):
         super().__init__()
@@ -68,7 +59,6 @@ class ChatWidget(QWidget):
 
         self.response_widget = QWidget()
         self.response_widget.setObjectName('main-chat-widget')
-        # self.response_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.response_layout = QVBoxLayout()
         # set alignment to top
         self.response_layout.setAlignment(Qt.Alignment.AlignTop)
@@ -83,10 +73,6 @@ class ChatWidget(QWidget):
         self.layout.addWidget(self.response_scroll_area)  # Add stretch factor to response_widget
         self.input_widget = self.input_widget()
         self.input_widget.setEnabled(False)
-
-        # chat_history = self.get_chat_history
-        # if chat_history:
-        #     self.changePage(chat_history[0])
 
     def changePage(self, chat_widget):
         chat_widget_data = json.loads(chat_widget)
@@ -146,7 +132,10 @@ class ChatWidget(QWidget):
         input_layout = QHBoxLayout()
         input_field = QLineEdit()
         input_field.setObjectName('input-field')
-        input_field.setPlaceholderText("Ask a question...")
+        input_field.setPlaceholderText("Find in PDF")
+        
+        # Connect the returnPressed signal to submit_button_clicked
+        input_field.returnPressed.connect(self.submit_button_clicked)
 
         submit_button = QPushButton("")
         # Set the icon for the submit button
@@ -172,7 +161,6 @@ class ChatWidget(QWidget):
 
     def submit_button_clicked(self):
         input_text = self.get_input()
-        # print(input_text)
 
         # Add a new prompt label with the text from the input field
         prompt_layout = QHBoxLayout()
@@ -226,9 +214,8 @@ class ChatWidget(QWidget):
             contents_height = response_label.document().size().height()
             response_label.setFixedHeight(contents_height+48)  # Adjust the height based on the contents and add padding
             QApplication.processEvents()
-            # Force UI update after each chunk append
-            # after each response append \n to the response label
-        response_label.setText(response_label.toPlainText() )
+        
+        response_label.setText(response_label.toPlainText())
         contents_height = response_label.document().size().height()
         response_label.setFixedHeight(contents_height+48)
         # after response complete update the chat history
