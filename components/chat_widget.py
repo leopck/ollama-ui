@@ -161,6 +161,8 @@ class ChatWidget(QWidget):
 
     def submit_button_clicked(self):
         input_text = self.get_input()
+        # Clear input immediately after getting the text
+        self.clear_input()
 
         # Add a new prompt label with the text from the input field
         prompt_layout = QHBoxLayout()
@@ -220,7 +222,6 @@ class ChatWidget(QWidget):
         response_label.setFixedHeight(contents_height+48)
         # after response complete update the chat history
         update_chat_history(input_text, response_label.toPlainText())
-        self.clear_input()
 
     def clear_input(self):
         input_widget = self.layout.itemAt(1).widget()
