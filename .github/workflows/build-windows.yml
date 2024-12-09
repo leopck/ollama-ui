@@ -1,0 +1,36 @@
+name: Build Windows Executable
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          # Install PyInstaller, PySide6, and ollama
+          pip install pyinstaller pyside6 ollama
+
+      - name: Build Executable
+        # Adjust the PyInstaller command as needed
+        run: pyinstaller --name="Ollama UI" --windowed --add-data "index.css;." --icon=icons/ai_icon.png main.py --onefile
+
+      - name: Archive and Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-artifacts
+          path: dist/
