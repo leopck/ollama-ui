@@ -4,7 +4,7 @@ import json
 from PySide6.QtCore import Qt, QFileSystemWatcher
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
-                             QPushButton, QFileDialog, QLabel)
+                             QPushButton, QFileDialog, QLabel, QSplitter)
 from PySide6.QtPdf import QPdfDocument
 from PySide6.QtPdfWidgets import QPdfView
 from components.chat_widget import ChatWidget
@@ -16,6 +16,7 @@ class PDFReader(QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)  # Remove margins for cleaner look
         
         # Create button to select PDF
         self.select_button = QPushButton("Select PDF")
@@ -25,6 +26,9 @@ class PDFReader(QWidget):
         self.pdf_document = QPdfDocument()
         self.pdf_view = QPdfView()
         self.pdf_view.setDocument(self.pdf_document)
+        
+        # Enable zoom controls
+        self.pdf_view.setZoomMode(QPdfView.ZoomMode.FitToWidth)
         
         # Add widgets to layout
         self.layout.addWidget(self.select_button)
@@ -52,20 +56,29 @@ class Window(QWidget):
         self.loadChatHistory()
         
         # Create main layout
-        main_layout = QHBoxLayout()  # Changed to QHBoxLayout for side-by-side widgets
+        main_layout = QVBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Create splitter for resizable panels
+        self.splitter = QSplitter(Qt.Horizontal)
         
         # Initialize PDF reader widget
         self.pdf_reader = PDFReader()
-        main_layout.addWidget(self.pdf_reader, 1)  # Add stretch factor of 1
+        self.splitter.addWidget(self.pdf_reader)
         
         # Initialize chat widget
         self.chat = ChatWidget()
         self.chat.setAttribute(Qt.WA_StyledBackground, True)
-        main_layout.addWidget(self.chat, 2)  # Add stretch factor of 2
+        self.splitter.addWidget(self.chat)
+        
+        # Set initial sizes (60% PDF reader, 40% chat)
+        self.splitter.setSizes([600, 400])
+        
+        # Add splitter to main layout
+        main_layout.addWidget(self.splitter)
         
         self.setLayout(main_layout)
-        self.resize(1200, 600)  # Increased default width to accommodate both widgets
+        self.resize(1200, 600)
         
         # Create initial chat session if none exists
         if not self.chat_history:
@@ -73,6 +86,17 @@ class Window(QWidget):
         else:
             # Load the most recent chat
             self.loadMostRecentChat()
+            
+        # Add stylesheet for splitter handle
+        self.setStyleSheet("""
+            QSplitter::handle {
+                background: #cccccc;
+                width: 2px;
+            }
+            QSplitter::handle:hover {
+                background: #999999;
+            }
+        """)
 
     def loadChatHistory(self):
         try:
