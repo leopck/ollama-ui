@@ -1,5 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
+    <file>icons/adobe.png</file>
+    <file>icons/spinner.gif</file>
     <file>icons/ai_icon.png</file>
     <file>icons/ai_icon.svg</file>
     <file>icons/user_icon.svg</file>
